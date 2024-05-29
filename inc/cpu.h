@@ -29,7 +29,7 @@ extern "C"
 		// Initialise the cpu and the system
 		void (*init)(void);
 		// Execute the logic of cpu on seperate thread to avoid performance drops.
-		void *(*cpu)(void *);
+		void API *(*cpu)(void *);
 	} gbCpu;
 
 #ifdef __cplusplus

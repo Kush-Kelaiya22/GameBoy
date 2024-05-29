@@ -11,6 +11,12 @@ extern "C"
 	typedef unsigned int ui32;
 	typedef signed char SByte;
 
+#ifdef DLL
+#define API __declspec(dllexport)
+#else
+#define API __declspec(dllimport)
+#endif
+
 #ifdef __cplusplus
 }
 #endif
