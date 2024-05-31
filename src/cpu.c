@@ -114,6 +114,74 @@ void *cpu(void *)
 		break;
 		case 0b10000000:
 		{
+			if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+			{
+				hl_ptr = ReadByte(hl);
+			}
+			gameboyCPU.flag = 0;
+			switch ((gameboyCPU.ins & 0b00111000) >> 3)
+			{
+			case 0:
+			{
+				Word Data = a + gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
+				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				a = Data;
+			}
+			break;
+			case 1:
+			{
+				Word Data = a + (gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] + ((gameboyCPU.flag >> 4) & 0b0001));
+				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
+				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				a = Data;
+			}
+			break;
+			case 2:
+			{
+				Word Data = a - gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				gameboyCPU.flag = 0b0100'0000;
+				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
+				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				a = Data;
+			}
+			break;
+			case 3:
+			{
+				Word Data = a - (gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] + ((gameboyCPU.flag >> 4) & 0b0001));
+				gameboyCPU.flag = 0b0100'0000;
+				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
+				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				a = Data;
+			}
+			break;
+			case 4:
+			{
+				a &= gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				gameboyCPU.flag = 0b0010'0000;
+			}
+			break;
+			case 5:
+			{
+				a ^= gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+			}
+			break;
+			case 6:
+			{
+				a |= gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+			}
+			break;
+			case 7:
+			{
+				Word Data = a - gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				gameboyCPU.flag |= 0b0100'0000;
+				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
+				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+			}
+			break;
+			}
+			gameboyCPU.flag &= 0b0111'0000;
+			gameboyCPU.flag |= ((a == 0) << 7);
 		}
 		break;
 		case 0b11000000:
