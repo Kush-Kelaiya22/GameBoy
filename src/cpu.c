@@ -45,9 +45,81 @@ void init(void)
 	gameboyCPU.PC = 0x0150;
 }
 
+Byte FetchByte()
+{
+	Byte Data = gameboyBUS.read(gameboyCPU.PC);
+	gameboyCPU.PC++;
+	return Data;
+}
+
+Word FetchWord()
+{
+	Word Data = FetchByte();
+	Data |= (FetchByte() << 8);
+	return Data;
+}
+
+Byte ReadByte(Word Addr)
+{
+	Byte Data = gameboyBUS.read(Addr);
+	return Data;
+}
+
+Word ReadWord(Word Addr)
+{
+	Word Data = ReadByte(Addr);
+	Data |= (ReadByte(Addr + 1) << 8);
+}
+
+void WriteByte(Word Addr, Byte Val)
+{
+	gameboyBUS.write(Addr, Val);
+}
+
+void WriteWord(Word Addr, Word Val)
+{
+	WriteByte(Addr, Val & 0x00FF);
+	WriteByte(Addr + 1, (Val >> 8) & 0x00FF);
+}
+
 void *cpu(void *)
 {
 	while (1)
 	{
+		gameboyCPU.ins = FetchByte();
+		switch (gameboyCPU.ins & 0b11000000)
+		{
+		case 0b00000000:
+		{
+		}
+		break;
+		case 0b01000000:
+		{
+			if (gameboyCPU.ins == hlt)
+			{
+			}
+			else
+			{
+				if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+				{
+					hl_ptr = ReadByte(hl);
+				}
+				gameboyCPU.reg[((gameboyCPU.ins & 0b00111000) >> 3)] = gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				if ((gameboyCPU.ins & 0b00111000) == 0b00110000)
+				{
+					WriteByte(hl, hl_ptr);
+				}
+			}
+		}
+		break;
+		case 0b10000000:
+		{
+		}
+		break;
+		case 0b11000000:
+		{
+		}
+		break;
+		}
 	}
 }
