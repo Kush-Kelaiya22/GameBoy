@@ -27,7 +27,7 @@ extern "C"
 		//
 		_Atomic(bool) IME;
 		// Initialise the cpu and the system
-		void (*init)(void);
+		void API (*init)(void);
 		// Execute the logic of cpu on seperate thread to avoid performance drops.
 		void API *(*cpu)(void *);
 	} gbCpu;

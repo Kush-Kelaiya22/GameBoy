@@ -12,9 +12,9 @@ extern "C"
 	typedef struct gbBus
 	{
 		// Read data from the bus
-		Byte (*read)(Word);
+		Byte API (*read)(Word);
 		// Write data to the bus
-		void (*write)(Word, Byte);
+		void API (*write)(Word, Byte);
 	} gbBus;
 
 #ifdef __cplusplus
