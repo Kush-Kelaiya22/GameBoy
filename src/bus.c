@@ -4,6 +4,7 @@ gbBus gameboyBUS;
 
 Byte read(Word Addr)
 {
+	return 0xFF;
 }
 
 void write(Word Addr, Byte Data)

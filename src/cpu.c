@@ -2,18 +2,21 @@
 #include <inc/bus.h>
 #include <inc/ins.h>
 
-#define b gameboyCPU.reg[0]				 // can be used anywhere
-#define c gameboyCPU.reg[1]				 // can be used anywhere
-#define d gameboyCPU.reg[2]				 // can be used anywhere
-#define e gameboyCPU.reg[3]				 // can be used anywhere
-#define h gameboyCPU.reg[4]				 // can be used anywhere
-#define l gameboyCPU.reg[5]				 // can be used anywhere
-#define hl_ptr gameboyCPU.reg[6]		 // can be used anywhere
-#define a gameboyCPU.reg[7]				 // can be used anywhere
-#define hl ((h << 8) || l)				 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
-#define bc ((b << 8) || c)				 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
-#define de ((d << 8) || e)				 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
-#define af ((a << 8) || gameboyCPU.flag) // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define regs gameboyCPU.reg
+#define flgs gameboyCPU.flag
+
+#define b regs[0]			  // can be used anywhere
+#define c regs[1]			  // can be used anywhere
+#define d regs[2]			  // can be used anywhere
+#define e regs[3]			  // can be used anywhere
+#define h regs[4]			  // can be used anywhere
+#define l regs[5]			  // can be used anywhere
+#define hl_ptr regs[6]		  // can be used anywhere
+#define a regs[7]			  // can be used anywhere
+#define hl ((h << 8) || l)	  // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define bc ((b << 8) || c)	  // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define de ((d << 8) || e)	  // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define af ((a << 8) || flgs) // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
 #define BC(X)                      \
 	{                              \
 		b = (((X) & 0xFF00) >> 8); \
@@ -29,10 +32,10 @@
 		h = (((X) & 0xFF00) >> 8); \
 		l = ((X) & 0x00FF);        \
 	}
-#define AF(X)                             \
-	{                                     \
-		a = (((X) & 0xFF00) >> 8);        \
-		gameboyCPU.flag = ((X) & 0x00F0); \
+#define AF(X)                      \
+	{                              \
+		a = (((X) & 0xFF00) >> 8); \
+		flgs = ((X) & 0x00F0);     \
 	}
 
 gbCpu gameboyCPU;
@@ -45,14 +48,14 @@ void init(void)
 	gameboyCPU.PC = 0x0150;
 }
 
-Byte FetchByte()
+Byte FetchByte(void)
 {
 	Byte Data = gameboyBUS.read(gameboyCPU.PC);
 	gameboyCPU.PC++;
 	return Data;
 }
 
-Word FetchWord()
+Word FetchWord(void)
 {
 	Word Data = FetchByte();
 	Data |= (FetchByte() << 8);
@@ -114,77 +117,77 @@ void PREFIX(void)
 		{
 		case 0b00'110'000:
 		{
-			Byte buffer = gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] >> 4;
-			gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] <<= 4;
-			gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] |= buffer;
-			gameboyCPU.flag &= 0b10000000;
-			gameboyCPU.flag &= (gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] == 0) << 7;
+			Byte buffer = regs[(gameboyCPU.ins & 0b00000111)] >> 4;
+			regs[(gameboyCPU.ins & 0b00000111)] <<= 4;
+			regs[(gameboyCPU.ins & 0b00000111)] |= buffer;
+			flgs &= 0b10000000;
+			flgs &= (regs[(gameboyCPU.ins & 0b00000111)] == 0) << 7;
 		}
 		break;
 		case 0b00'111'000:
 		{
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] >>= 1;
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			flgs = 0;
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
+			regs[gameboyCPU.ins & 0b00000111] >>= 1;
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		case 0b00'100'000:
 		{
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b1000'0000) << 4);
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] <<= 1;
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			flgs = 0;
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] & 0b1000'0000) << 4);
+			regs[gameboyCPU.ins & 0b00000111] <<= 1;
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		case 0b00'101'000:
 		{
-			Byte bit7 = gameboyCPU.reg[gameboyCPU.ins] & 0b1000'0000;
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] >>= 1;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] |= bit7;
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			Byte bit7 = regs[gameboyCPU.ins] & 0b1000'0000;
+			flgs = 0;
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
+			regs[gameboyCPU.ins & 0b00000111] >>= 1;
+			regs[gameboyCPU.ins & 0b00000111] |= bit7;
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		case 0b00'010'000:
 		{
-			Byte bit7 = gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b1000'0000;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] <<= 1;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] |= ((gameboyCPU.flag & 0b0001'000) >> 4);
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= (bit7 >> 3);
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			Byte bit7 = regs[gameboyCPU.ins & 0b00000111] & 0b1000'0000;
+			regs[gameboyCPU.ins & 0b00000111] <<= 1;
+			regs[gameboyCPU.ins & 0b00000111] |= ((flgs & 0b0001'000) >> 4);
+			flgs = 0;
+			flgs |= (bit7 >> 3);
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		case 0b00'011'000:
 		{
-			Byte bit0 = gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b0000'0001;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] >>= 1;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] |= ((gameboyCPU.flag & 0b0001'000) << 3);
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= (bit0 << 4);
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			Byte bit0 = regs[gameboyCPU.ins & 0b00000111] & 0b0000'0001;
+			regs[gameboyCPU.ins & 0b00000111] >>= 1;
+			regs[gameboyCPU.ins & 0b00000111] |= ((flgs & 0b0001'000) << 3);
+			flgs = 0;
+			flgs |= (bit0 << 4);
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		case 0b00'000'000:
 		{
-			Byte bit7 = gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] & 0b1000'0000;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] <<= 1;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] |= (bit7 >> 7);
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= (bit7 >> 3);
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			Byte bit7 = regs[gameboyCPU.ins & 0b00'000'111] & 0b1000'0000;
+			regs[gameboyCPU.ins & 0b00'000'111] <<= 1;
+			regs[gameboyCPU.ins & 0b00'000'111] |= (bit7 >> 7);
+			flgs = 0;
+			flgs |= (bit7 >> 3);
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		case 0b00'001'000:
 		{
-			Byte bit0 = gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] & 0b0000'0001;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] >>= 1;
-			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] |= (bit0 << 7);
-			gameboyCPU.flag = 0;
-			gameboyCPU.flag |= (bit0 << 4);
-			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+			Byte bit0 = regs[gameboyCPU.ins & 0b00'000'111] & 0b0000'0001;
+			regs[gameboyCPU.ins & 0b00'000'111] >>= 1;
+			regs[gameboyCPU.ins & 0b00'000'111] |= (bit0 << 7);
+			flgs = 0;
+			flgs |= (bit0 << 4);
+			flgs |= ((regs[gameboyCPU.ins & 0b00000111] == 0) << 7);
 		}
 		break;
 		}
@@ -200,9 +203,9 @@ void PREFIX(void)
 		{
 			hl_ptr = ReadByte(hl);
 		}
-		gameboyCPU.flag &= (0b0011'0000);
-		gameboyCPU.flag |= (0b0010'0000);
-		gameboyCPU.flag |= (gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & (0b1 << ((gameboyCPU.ins & 0b00111000) >> 3))) << 7;
+		flgs &= (0b0011'0000);
+		flgs |= (0b0010'0000);
+		flgs |= (regs[gameboyCPU.ins & 0b00000111] & (0b1 << ((gameboyCPU.ins & 0b00111000) >> 3))) << 7;
 	}
 	break;
 	case 0b10'000'000:
@@ -212,7 +215,7 @@ void PREFIX(void)
 		{
 			hl_ptr = ReadByte(hl);
 		}
-		gameboyCPU.reg[gameboyCPU.ins & 0b00000111] = set_reset(gameboyCPU.reg[gameboyCPU.ins & 0b00000111], (gameboyCPU.ins & 0b00111000) >> 3, (gameboyCPU.ins & 0b01000000) >> 6);
+		regs[gameboyCPU.ins & 0b00000111] = set_reset(regs[gameboyCPU.ins & 0b00000111], (gameboyCPU.ins & 0b00111000) >> 3, (gameboyCPU.ins & 0b01000000) >> 6);
 		if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
 		{
 			WriteByte(hl, hl_ptr);
@@ -244,7 +247,7 @@ void *cpu(void *)
 				{
 					hl_ptr = ReadByte(hl);
 				}
-				gameboyCPU.reg[((gameboyCPU.ins & 0b00111000) >> 3)] = gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				regs[((gameboyCPU.ins & 0b00111000) >> 3)] = regs[(gameboyCPU.ins & 0b00000111)];
 				if ((gameboyCPU.ins & 0b00111000) == 0b00110000)
 				{
 					WriteByte(hl, hl_ptr);
@@ -258,70 +261,70 @@ void *cpu(void *)
 			{
 				hl_ptr = ReadByte(hl);
 			}
-			gameboyCPU.flag = 0;
+			flgs = 0;
 			switch ((gameboyCPU.ins & 0b00111000) >> 3)
 			{
 			case 0:
 			{
-				Word Data = a + gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
-				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
-				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				Word Data = a + regs[(gameboyCPU.ins & 0b00000111)];
+				flgs |= ((Data & 0x100) >> 8) << 4;
+				flgs |= (((Data ^ a) >> 3) == 0) << 5;
 				a = Data;
 			}
 			break;
 			case 1:
 			{
-				Word Data = a + (gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] + ((gameboyCPU.flag >> 4) & 0b0001));
-				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
-				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				Word Data = a + (regs[(gameboyCPU.ins & 0b00000111)] + ((flgs >> 4) & 0b0001));
+				flgs |= ((Data & 0x100) >> 8) << 4;
+				flgs |= (((Data ^ a) >> 3) == 0) << 5;
 				a = Data;
 			}
 			break;
 			case 2:
 			{
-				Word Data = a - gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
-				gameboyCPU.flag = 0b0100'0000;
-				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
-				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				Word Data = a - regs[(gameboyCPU.ins & 0b00000111)];
+				flgs = 0b0100'0000;
+				flgs |= ((Data & 0x100) >> 8) << 4;
+				flgs |= (((Data ^ a) >> 3) == 0) << 5;
 				a = Data;
 			}
 			break;
 			case 3:
 			{
-				Word Data = a - (gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] + ((gameboyCPU.flag >> 4) & 0b0001));
-				gameboyCPU.flag = 0b0100'0000;
-				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
-				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				Word Data = a - (regs[(gameboyCPU.ins & 0b00000111)] + ((flgs >> 4) & 0b0001));
+				flgs = 0b0100'0000;
+				flgs |= ((Data & 0x100) >> 8) << 4;
+				flgs |= (((Data ^ a) >> 3) == 0) << 5;
 				a = Data;
 			}
 			break;
 			case 4:
 			{
-				a &= gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
-				gameboyCPU.flag = 0b0010'0000;
+				a &= regs[(gameboyCPU.ins & 0b00000111)];
+				flgs = 0b0010'0000;
 			}
 			break;
 			case 5:
 			{
-				a ^= gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				a ^= regs[(gameboyCPU.ins & 0b00000111)];
 			}
 			break;
 			case 6:
 			{
-				a |= gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
+				a |= regs[(gameboyCPU.ins & 0b00000111)];
 			}
 			break;
 			case 7:
 			{
-				Word Data = a - gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)];
-				gameboyCPU.flag |= 0b0100'0000;
-				gameboyCPU.flag |= ((Data & 0x100) >> 8) << 4;
-				gameboyCPU.flag |= (((Data ^ a) >> 3) == 0) << 5;
+				Word Data = a - regs[(gameboyCPU.ins & 0b00000111)];
+				flgs |= 0b0100'0000;
+				flgs |= ((Data & 0x100) >> 8) << 4;
+				flgs |= (((Data ^ a) >> 3) == 0) << 5;
 			}
 			break;
 			}
-			gameboyCPU.flag &= 0b0111'0000;
-			gameboyCPU.flag |= ((a == 0) << 7);
+			flgs &= 0b0111'0000;
+			flgs |= ((a == 0) << 7);
 		}
 		break;
 		case 0b11000000:
