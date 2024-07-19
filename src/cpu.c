@@ -82,6 +82,146 @@ void WriteWord(Word Addr, Word Val)
 	WriteByte(Addr + 1, (Val >> 8) & 0x00FF);
 }
 
+Byte set_reset(Byte reg, Byte bit, bool SR)
+{
+	switch (SR)
+	{
+	case 1:
+	{
+		reg |= (0b1 << bit);
+	}
+	break;
+	case 0:
+	{
+		reg &= (~(0b1 << bit));
+	}
+	break;
+	}
+	return reg;
+}
+
+void PREFIX(void)
+{
+	switch (gameboyCPU.ins & 0b11'000'000)
+	{
+	case 0b00'000'000:
+	{
+		if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+		{
+			hl_ptr = ReadByte(hl);
+		}
+		switch (gameboyCPU.ins & 0b00'111'000)
+		{
+		case 0b00'110'000:
+		{
+			Byte buffer = gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] >> 4;
+			gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] <<= 4;
+			gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] |= buffer;
+			gameboyCPU.flag &= 0b10000000;
+			gameboyCPU.flag &= (gameboyCPU.reg[(gameboyCPU.ins & 0b00000111)] == 0) << 7;
+		}
+		break;
+		case 0b00'111'000:
+		{
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] >>= 1;
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		case 0b00'100'000:
+		{
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b1000'0000) << 4);
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] <<= 1;
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		case 0b00'101'000:
+		{
+			Byte bit7 = gameboyCPU.reg[gameboyCPU.ins] & 0b1000'0000;
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] >>= 1;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] |= bit7;
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		case 0b00'010'000:
+		{
+			Byte bit7 = gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b1000'0000;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] <<= 1;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] |= ((gameboyCPU.flag & 0b0001'000) >> 4);
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= (bit7 >> 3);
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		case 0b00'011'000:
+		{
+			Byte bit0 = gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & 0b0000'0001;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] >>= 1;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00000111] |= ((gameboyCPU.flag & 0b0001'000) << 3);
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= (bit0 << 4);
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		case 0b00'000'000:
+		{
+			Byte bit7 = gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] & 0b1000'0000;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] <<= 1;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] |= (bit7 >> 7);
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= (bit7 >> 3);
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		case 0b00'001'000:
+		{
+			Byte bit0 = gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] & 0b0000'0001;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] >>= 1;
+			gameboyCPU.reg[gameboyCPU.ins & 0b00'000'111] |= (bit0 << 7);
+			gameboyCPU.flag = 0;
+			gameboyCPU.flag |= (bit0 << 4);
+			gameboyCPU.flag |= ((gameboyCPU.reg[gameboyCPU.ins & 0b00000111] == 0) << 7);
+		}
+		break;
+		}
+		if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+		{
+			WriteByte(hl, hl_ptr);
+		}
+	}
+	break;
+	case 0b01'000'000:
+	{
+		if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+		{
+			hl_ptr = ReadByte(hl);
+		}
+		gameboyCPU.flag &= (0b0011'0000);
+		gameboyCPU.flag |= (0b0010'0000);
+		gameboyCPU.flag |= (gameboyCPU.reg[gameboyCPU.ins & 0b00000111] & (0b1 << ((gameboyCPU.ins & 0b00111000) >> 3))) << 7;
+	}
+	break;
+	case 0b10'000'000:
+	case 0b11'000'000:
+	{
+		if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+		{
+			hl_ptr = ReadByte(hl);
+		}
+		gameboyCPU.reg[gameboyCPU.ins & 0b00000111] = set_reset(gameboyCPU.reg[gameboyCPU.ins & 0b00000111], (gameboyCPU.ins & 0b00111000) >> 3, (gameboyCPU.ins & 0b01000000) >> 6);
+		if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
+		{
+			WriteByte(hl, hl_ptr);
+		}
+	}
+	break;
+	}
+}
+
 void *cpu(void *)
 {
 	while (1)
