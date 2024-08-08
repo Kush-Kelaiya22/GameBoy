@@ -234,6 +234,49 @@ void *cpu(void *)
 		{
 		case 0b00000000:
 		{
+			switch (gameboyCPU.ins)
+			{
+			case inc_bc:
+			{
+				BC(bc + 1);
+			}
+			break;
+			case inc_de:
+			{
+				DE(de + 1);
+			}
+			break;
+			case inc_hl:
+			{
+				HL(hl + 1);
+			}
+			break;
+			case inc_sp:
+			{
+				gameboyCPU.SP += 1;
+			}
+			break;
+			case dec_bc:
+			{
+				BC(bc - 1);
+			}
+			break;
+			case dec_de:
+			{
+				DE(de - 1);
+			}
+			break;
+			case dec_hl:
+			{
+				HL(hl - 1);
+			}
+			break;
+			case dec_sp:
+			{
+				gameboyCPU.SP -= 1;
+			}
+			break;
+			}
 		}
 		break;
 		case 0b01000000:
@@ -268,7 +311,7 @@ void *cpu(void *)
 			{
 				Word Data = a + regs[(gameboyCPU.ins & 0b00000111)];
 				flgs |= ((Data & 0x100) >> 8) << 4;
-				flgs |= (((Data ^ a) >> 3) == 0) << 5;
+				flgs |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 				a = Data;
 			}
 			break;
@@ -276,7 +319,7 @@ void *cpu(void *)
 			{
 				Word Data = a + (regs[(gameboyCPU.ins & 0b00000111)] + ((flgs >> 4) & 0b0001));
 				flgs |= ((Data & 0x100) >> 8) << 4;
-				flgs |= (((Data ^ a) >> 3) == 0) << 5;
+				flgs |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 				a = Data;
 			}
 			break;
@@ -285,7 +328,7 @@ void *cpu(void *)
 				Word Data = a - regs[(gameboyCPU.ins & 0b00000111)];
 				flgs = 0b0100'0000;
 				flgs |= ((Data & 0x100) >> 8) << 4;
-				flgs |= (((Data ^ a) >> 3) == 0) << 5;
+				flgs |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 				a = Data;
 			}
 			break;
@@ -294,7 +337,7 @@ void *cpu(void *)
 				Word Data = a - (regs[(gameboyCPU.ins & 0b00000111)] + ((flgs >> 4) & 0b0001));
 				flgs = 0b0100'0000;
 				flgs |= ((Data & 0x100) >> 8) << 4;
-				flgs |= (((Data ^ a) >> 3) == 0) << 5;
+				flgs |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 				a = Data;
 			}
 			break;
@@ -307,11 +350,13 @@ void *cpu(void *)
 			case 5:
 			{
 				a ^= regs[(gameboyCPU.ins & 0b00000111)];
+				flgs = 0b0000'0000;
 			}
 			break;
 			case 6:
 			{
 				a |= regs[(gameboyCPU.ins & 0b00000111)];
+				flgs = 0b0000'0000;
 			}
 			break;
 			case 7:
@@ -319,7 +364,7 @@ void *cpu(void *)
 				Word Data = a - regs[(gameboyCPU.ins & 0b00000111)];
 				flgs |= 0b0100'0000;
 				flgs |= ((Data & 0x100) >> 8) << 4;
-				flgs |= (((Data ^ a) >> 3) == 0) << 5;
+				flgs |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 			}
 			break;
 			}
@@ -329,6 +374,15 @@ void *cpu(void *)
 		break;
 		case 0b11000000:
 		{
+			switch (gameboyCPU.ins)
+			{
+			case prefix:
+			{
+				FetchByte();
+				PREFIX();
+			}
+			break;
+			}
 		}
 		break;
 		}
