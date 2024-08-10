@@ -5,18 +5,18 @@
 #define regs gameboyCPU.reg
 #define flgs gameboyCPU.flag
 
-#define b regs[0]			  // can be used anywhere
-#define c regs[1]			  // can be used anywhere
-#define d regs[2]			  // can be used anywhere
-#define e regs[3]			  // can be used anywhere
-#define h regs[4]			  // can be used anywhere
-#define l regs[5]			  // can be used anywhere
-#define hl_ptr regs[6]		  // can be used anywhere
-#define a regs[7]			  // can be used anywhere
-#define hl ((h << 8) || l)	  // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
-#define bc ((b << 8) || c)	  // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
-#define de ((d << 8) || e)	  // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
-#define af ((a << 8) || flgs) // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define b regs[0]			 // can be used anywhere
+#define c regs[1]			 // can be used anywhere
+#define d regs[2]			 // can be used anywhere
+#define e regs[3]			 // can be used anywhere
+#define h regs[4]			 // can be used anywhere
+#define l regs[5]			 // can be used anywhere
+#define hl_ptr regs[6]		 // can be used anywhere
+#define a regs[7]			 // can be used anywhere
+#define hl ((h << 8) | l)	 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define bc ((b << 8) | c)	 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define de ((d << 8) | e)	 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
+#define af ((a << 8) | flgs) // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
 #define BC(X)                      \
 	{                              \
 		b = (((X) & 0xFF00) >> 8); \
