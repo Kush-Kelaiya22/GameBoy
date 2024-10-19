@@ -142,7 +142,7 @@ void PREFIX(void)
 		break;
 		case 0b00'101'000:
 		{
-			Byte bit7 = regs[gameboyCPU.ins] & 0b1000'0000;
+			Byte bit7 = regs[gameboyCPU.ins & 0b00000111] & 0b1000'0000;
 			flgs = 0;
 			flgs |= ((regs[gameboyCPU.ins & 0b00000111] & 0b01) << 4);
 			regs[gameboyCPU.ins & 0b00000111] >>= 1;
