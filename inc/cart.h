@@ -26,6 +26,8 @@ extern "C"
 		Byte (*read)(Word);
 		// Write data to cart
 		void (*write)(Word, Byte);
+		// cartrige setup
+		void (*init)(void *);
 	} gbCart;
 
 #ifdef __cplusplus

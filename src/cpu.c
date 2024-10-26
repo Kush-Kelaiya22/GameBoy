@@ -276,6 +276,50 @@ void *cpu(void *)
 				gameboyCPU.SP -= 1;
 			}
 			break;
+			case ld_b_imm:
+			{
+				b = FetchByte();
+			}
+			break;
+			case ld_c_imm:
+			{
+				c = FetchByte();
+			}
+			break;
+			case ld_d_imm:
+			{
+				d = FetchByte();
+			}
+			break;
+			case ld_e_imm:
+			{
+				e = FetchByte();
+			}
+			break;
+			case ld_h_imm:
+			{
+				h = FetchByte();
+			}
+			break;
+			case ld_l_imm:
+			{
+				l = FetchByte();
+			}
+			break;
+			case ld_hl_r8_imm:
+			{
+				hl_ptr = FetchByte();
+			}
+			break;
+			case ld_a_imm:
+			{
+				a = FetchByte();
+			}
+			break;
+			case nop:
+			{
+			}
+			break;
 			}
 		}
 		break;
