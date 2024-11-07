@@ -1,5 +1,10 @@
 # README
+
 This build of the emulator as of now supports windows only. For support of MACOS and Linux, please contribute to this project or you can wait for support in the future.
+
+# GameBoy Architecture Reference
+
+https://gbdev.io/pandocs/
 
 # LICENSE
 
