@@ -2,6 +2,7 @@
 #include <inc/bus.h>
 #include <inc/ins.h>
 
+
 #define regs gameboyCPU.reg
 #define flgs gameboyCPU.flag
 
@@ -18,28 +19,28 @@
 #define de ((d << 8) | e)	 // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
 #define af ((a << 8) | flgs) // can be only used to refer data from memory, cannot be used to store data into the specified register by the macro
 #define BC(X)                      \
-	{                              \
-		b = (((X) & 0xFF00) >> 8); \
-		c = ((X) & 0x00FF);        \
-	}
+{                              \
+	b = (((X) & 0xFF00) >> 8); \
+	c = ((X) & 0x00FF);        \
+}
 #define DE(X)                      \
-	{                              \
-		d = (((X) & 0xFF00) >> 8); \
-		e = ((X) & 0x00FF);        \
-	}
+{                              \
+	d = (((X) & 0xFF00) >> 8); \
+	e = ((X) & 0x00FF);        \
+}
 #define HL(X)                      \
-	{                              \
-		h = (((X) & 0xFF00) >> 8); \
-		l = ((X) & 0x00FF);        \
-	}
+{                              \
+	h = (((X) & 0xFF00) >> 8); \
+	l = ((X) & 0x00FF);        \
+}
 #define AF(X)                      \
-	{                              \
-		a = (((X) & 0xFF00) >> 8); \
-		flgs = ((X) & 0x00F0);     \
-	}
+{                              \
+	a = (((X) & 0xFF00) >> 8); \
+	flgs = ((X) & 0x00F0);     \
+}
 
 gbCpu gameboyCPU;
-gbBus gameboyBUS;
+extern gbBus gameboyBUS;
 
 void init(void)
 {
@@ -87,19 +88,7 @@ void WriteWord(Word Addr, Word Val)
 
 Byte set_reset(Byte reg, Byte bit, bool SR)
 {
-	switch (SR)
-	{
-	case 1:
-	{
-		reg |= (0b1 << bit);
-	}
-	break;
-	case 0:
-	{
-		reg &= (~(0b1 << bit));
-	}
-	break;
-	}
+	(SR == 1) ? (reg |= (0b1 << bit)) : (reg &= (~(0b1 << bit)));
 	return reg;
 }
 
@@ -225,7 +214,7 @@ void PREFIX(void)
 	}
 }
 
-void *cpu(void *)
+void cpu(void *)
 {
 	while (1)
 	{
@@ -432,3 +421,5 @@ void *cpu(void *)
 		}
 	}
 }
+
+gbCpu gameboyCPU = {.init = init, .cpu = cpu};

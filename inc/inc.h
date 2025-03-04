@@ -15,15 +15,6 @@ extern "C"
 	typedef unsigned int ui32;
 	typedef signed char SByte;
 
-/**
- * Making DLL format available for easy updating and future modification.
- */
-#ifdef DLL
-#define API __declspec(dllexport)
-#else
-#define API __declspec(dllimport)
-#endif
-
 #ifdef __cplusplus
 }
 #endif
