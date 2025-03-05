@@ -5,8 +5,6 @@ BIN = bin
 SRC = src
 INC = inc
 
-OBJ = src/obj
-
 LIBRARIES =
 EXECUTABLE = main
 

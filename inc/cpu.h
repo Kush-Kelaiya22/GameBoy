@@ -26,10 +26,12 @@ extern "C"
 		_Atomic(Byte) ins;
 		//
 		_Atomic(bool) IME;
+		// Internal RAM that comes with the system;
+		_Atomic(Byte) *RAM;
 		// Initialise the cpu and the system
 		void (*init)(void);
 		// Execute the logic of cpu on seperate thread to avoid performance drops.
-		void (*cpu)(void *);
+		void (*cpu)(void);
 	} gbCpu;
 
 #ifdef __cplusplus

@@ -1,4 +1,5 @@
 #include <inc/inc.h>
+#include <stdio.h>
 
 #ifndef __CART__
 #define __CART__
@@ -10,8 +11,8 @@ extern "C"
 
 	typedef struct gbCart
 	{
-		// A memory pointer in the cart to avoid loading of large rom files in memory and causing performance, RAM and stability issues
-		_Atomic(ui32) cartRomPointer;
+		// copying the entire rom in memory, as the gameboy roms are small in size.
+		_Atomic(Byte) *ROM;
 		// Cartridge RAM for those games that support it.
 		_Atomic(Byte) *RAM;
 		// ROM bank selector for those that support ROM banking
