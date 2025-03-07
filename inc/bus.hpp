@@ -8,8 +8,8 @@ namespace gameboy
 	class BUS
 	{
 		public:
-		Byte read(Word Addr);
-		void write(Word Addr, Byte data);
+		Byte operator[](Word Addr) const;
+		Byte& operator[](Word Addr);
 	};
 }
 

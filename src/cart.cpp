@@ -1,18 +1,18 @@
-#include <inc/cart.hpp>
+#include <inc/gameboy.hpp>
 
 namespace gameboy
 {
-	cart::cart()
+	CART::CART()
 	{
 	}
 
-	cart::~cart()
+	CART::~CART()
 	{
 		delete[] ROM;
 		delete[] RAM;
 	}
 
-	Byte cart::operator[](Word Addr) const
+	Byte CART::operator[](Word Addr) const
 	{
 		if (Addr < 0x8000)
 		{
@@ -28,7 +28,7 @@ namespace gameboy
 		}
 	}
 
-	Byte& cart::operator[](Word Addr)
+	Byte& CART::operator[](Word Addr)
 	{
 		if (Addr >= 0xA000 and Addr <= 0xBFFF)
 		{

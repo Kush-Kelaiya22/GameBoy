@@ -8,22 +8,37 @@ namespace gameboy
 	class CPU 
 	{
 		private:
-		// The status register containing flag data
 		static Byte flag;
-		// All the registers available in the cpu except the status register
 		static Byte reg[8];
-		// Stack Pointer
+		Byte& b = reg[0];
+		Byte& c = reg[1];
+		Byte& d = reg[2];
+		Byte& e = reg[3];
+		Byte& h = reg[4];
+		Byte& l = reg[5];
+		Byte& hl_ptr = reg[6];
+		Byte& a = reg[7];
 		static Word SP;
-		// Program Counter
 		static Word PC;
-		// Interrupt Enable Flag
 		static Byte IE;
-		// Number of cycles completed
 		static ui32 ticks;
-		// The instruction register
 		static Byte ins;
-		// Interrut enable register
 		static bool IME;
+		Word HL(void);
+		Word BC(void);
+		Word DE(void);
+		Word AF(void);
+		void HL(Word data);
+		void BC(Word data);
+		void DE(Word data);
+		Byte FetchByte();
+		Word FetchWord();
+		Byte ReadByte(Word addr);
+		Word ReadWord(Word addr);
+		void WriteByte(Word addr, Byte data);
+		void WriteWord(Word addr, Word data);
+		void prefix_execute();
+		void set_reset(Byte& reg, Byte bit, bool set);
 		public:
 		CPU();
 		~CPU();

@@ -1,4 +1,4 @@
-#include <inc/ram.hpp>
+#include <inc/gameboy.hpp>
 
 namespace gameboy
 {
