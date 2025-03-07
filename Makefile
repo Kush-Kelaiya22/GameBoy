@@ -1,5 +1,5 @@
-CC = gcc
-CFLAGS = -std=c2x -ggdb
+CC = g++
+CFLAGS = -std=c++23 -ggdb
 
 BIN = bin
 SRC = src
