@@ -15,6 +15,44 @@ namespace gameboy
 		return bus[PC++];
 	}
 
+	Word CPU::HL(void)
+	{
+		return (h << 8) | l;
+	}
+
+	Word CPU::DE(void)
+	{
+		return (d << 8) | e;
+	}
+
+	Word CPU::BC(void)
+	{
+		return (b << 8) | c;
+	}
+
+	Word CPU::AF(void)
+	{
+		return (a << 8) | flag;
+	}
+
+	void CPU::HL(Word data)
+	{
+		h = data & 0x00FF;
+		l = (data >> 8);
+	}
+
+	void CPU::DE(Word data)
+	{
+		d = data & 0x00FF;
+		e = (data >> 8);
+	}
+
+	void CPU::BC(Word data)
+	{
+		b = data & 0x00FF;
+		c = (data >> 8);
+	}
+
 	Word CPU::FetchWord()
 	{
 		Word w = bus[PC++];
@@ -165,7 +203,85 @@ namespace gameboy
 			switch(ins & 0b11'000'000)
 			{
 				case 0b00'000'000:
-				{} break;
+				{
+					switch(ins)
+					{
+						case inc_bc:
+						{
+							BC(BC() + 1);
+						} break;
+						case inc_de:
+						{
+							DE(DE() + 1);
+						} break;
+						case inc_hl:
+						{
+							HL(HL() + 1);
+						} break;
+						case inc_sp:
+						{
+							SP++;
+						} break;
+						case dec_bc:
+						{
+							BC(BC() - 1);
+						} break;
+						case dec_de:
+						{
+							DE(DE() - 1);
+						} break;
+						case dec_hl:
+						{
+							HL(HL() - 1);
+						} break;
+						case dec_sp:
+						{
+							SP--;
+						} break;
+						case ld_b_imm:
+						{
+							b = FetchByte();
+						}
+						break;
+						case ld_c_imm:
+						{
+							c = FetchByte();
+						}
+						break;
+						case ld_d_imm:
+						{
+							d = FetchByte();
+						}
+						break;
+						case ld_e_imm:
+						{
+							e = FetchByte();
+						}
+						break;
+						case ld_h_imm:
+						{
+							h = FetchByte();
+						}
+						break;
+						case ld_l_imm:
+						{
+							l = FetchByte();
+						}
+						break;
+						case ld_hl_r8_imm:
+						{
+							hl_ptr = FetchByte();
+						}
+						break;
+						case ld_a_imm:
+						{
+							a = FetchByte();
+						}
+						break;
+						case nop:
+						{} break;
+					}
+				} break;
 				case 0b01'000'000:
 				{
 					if(ins == hlt)
