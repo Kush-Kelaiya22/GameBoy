@@ -1,6 +1,4 @@
-#include <inc/cpu.h>
-#include <inc/bus.h>
-#include <inc/ins.h>
+#include <inc/gameboy.h>
 
 #define regs gameboyCPU.reg
 #define flgs gameboyCPU.flag

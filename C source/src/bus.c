@@ -1,6 +1,4 @@
-#include <inc/bus.h>
-#include <inc/cart.h>
-#include <inc/ram.h>
+#include <inc/gameboy.h>
 
 extern gbCart gameboyCartridge;
 extern gbRam gameboyRAM;

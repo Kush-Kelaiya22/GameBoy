@@ -1,4 +1,4 @@
-#include <inc/cart.h>
+#include <inc/gameboy.h>
 #include <malloc.h>
 
 void cart_init(void)

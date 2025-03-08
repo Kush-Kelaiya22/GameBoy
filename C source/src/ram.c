@@ -1,4 +1,4 @@
-#include <inc/ram.h>
+#include <inc/gameboy.h>
 #include <malloc.h>
 
 void ram_init(void)
