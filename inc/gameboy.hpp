@@ -9,10 +9,10 @@
 
 namespace gameboy
 {
-	CART cartridge;
-	CPU cpu;
-	BUS bus;
-	RAM ram;
+	static CART cart;
+	static RAM ram;
+	static BUS bus(ram, cart);
+	static CPU cpu(bus);
 }
 
 #endif // __GAMEBOY__

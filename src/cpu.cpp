@@ -2,7 +2,7 @@
 
 namespace gameboy
 {
-	CPU::CPU()
+	CPU::CPU(BUS& b) : bus(b)
 	{
 		for(Byte& r : reg) r = 0x00;
 		PC = 0x0150;
@@ -10,77 +10,77 @@ namespace gameboy
 		flag = 0x00;
 	}
 
-	Byte CPU::FetchByte()
-	{
-		return bus[PC++];
-	}
-
 	Word CPU::HL(void)
 	{
 		return (h << 8) | l;
 	}
-
+	
 	Word CPU::DE(void)
 	{
 		return (d << 8) | e;
 	}
-
+	
 	Word CPU::BC(void)
 	{
 		return (b << 8) | c;
 	}
-
+	
 	Word CPU::AF(void)
 	{
 		return (a << 8) | flag;
 	}
-
+	
 	void CPU::HL(Word data)
 	{
 		h = data & 0x00FF;
 		l = (data >> 8);
 	}
-
+	
 	void CPU::DE(Word data)
 	{
 		d = data & 0x00FF;
 		e = (data >> 8);
 	}
-
+	
 	void CPU::BC(Word data)
 	{
 		b = data & 0x00FF;
 		c = (data >> 8);
 	}
-
+	
+	Byte CPU::FetchByte()
+	{
+		return bus.read(PC++);
+	}
+	
 	Word CPU::FetchWord()
 	{
-		Word w = bus[PC++];
-		w |= bus[PC++] << 8;
+		Word w = bus.read(PC++);
+		w |= bus.read(PC++) << 8;
 		return w;
 	}
 
 	Byte CPU::ReadByte(Word addr)
 	{
-		return bus[addr];
+		return bus.read(addr);
 	}
 
 	Word CPU::ReadWord(Word addr)
 	{
-		Word w = bus[addr];
-		w |= bus[addr + 1] << 8;
+		Word w = bus.read(addr);
+		w |= bus.read(addr + 1) << 8;
 		return w;
 	}
 
 	void CPU::WriteByte(Word addr, Byte data)
 	{
-		bus[addr] = data;
+		bus.write(addr, data);
 	}
 
 	void CPU::WriteWord(Word addr, Word data)
 	{
-		bus[addr] = data & 0x00FF;
-		bus[addr + 1] = data >> 8;
+		bus.write(addr, data & 0x00FF);
+		bus.write(addr + 1, data >> 8);
 	}
 
 	inline void CPU::set_reset(Byte& reg, Byte bit, bool SR)

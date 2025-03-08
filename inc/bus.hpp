@@ -5,11 +5,17 @@
 
 namespace gameboy
 {
+	class RAM;
+	class CART;
 	class BUS
 	{
+		private:
+		RAM& ram;
+		CART& cart;
 		public:
-		Byte operator[](Word Addr) const;
-		Byte& operator[](Word Addr);
+		BUS(RAM& r, CART& c);
+		Byte read(Word Addr);
+		void write(Word Addr, Byte data);
 	};
 }
 

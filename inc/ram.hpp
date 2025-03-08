@@ -9,7 +9,7 @@ namespace gameboy
 	{
 		private:
 		// The memory of the system
-		static Byte* memory;
+		Byte* memory;
 		public:
 		RAM();
 		~RAM();

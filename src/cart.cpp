@@ -30,9 +30,6 @@ namespace gameboy
 
 	Byte& CART::operator[](Word Addr)
 	{
-		if (Addr >= 0xA000 and Addr <= 0xBFFF)
-		{
-			return RAM[Addr & 0x1FFF];
-		}
+		return RAM[Addr & 0x1FFF];
 	}
 }

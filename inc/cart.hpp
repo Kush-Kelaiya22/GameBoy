@@ -8,12 +8,12 @@ namespace gameboy
 	class CART
 	{
 		private:
-		static Byte * ROM;
-		static Byte * RAM;
-		static Byte ROM_BANK_NUMBER, ROM_BANK_SELECT[2];
-		static Byte RAM_BANK_NUMBER, RAM_BANK_SELECT[2];
-		static bool MBC1_Mode;
-		static bool RAM_BANK_ENABLE[2];
+		Byte * ROM;
+		Byte * RAM;
+		Byte ROM_BANK_NUMBER, ROM_BANK_SELECT[2];
+		Byte RAM_BANK_NUMBER, RAM_BANK_SELECT[2];
+		bool MBC1_Mode;
+		bool RAM_BANK_ENABLE[2];
 		public:
 		CART();
 		~CART();
