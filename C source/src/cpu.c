@@ -1,4 +1,6 @@
-#include <inc/gameboy.h>
+#include <inc/cpu.h>
+#include <inc/bus.h>
+#include <inc/ins.h>
 
 #define regs gameboyCPU.reg
 #define flgs gameboyCPU.flag
@@ -38,7 +40,7 @@
 
 extern gbBus gameboyBUS;
 
-void cpu_init(void)
+static void init(void)
 {
 	extern gbCpu gameboyCPU;
 	a = b = c = d = e = h = l = hl_ptr = 0x00;
@@ -217,14 +219,14 @@ void PREFIX(void)
 void cpu(void)
 {
 	extern gbCpu gameboyCPU;
-	#ifndef __DEBUG__
+#ifndef __DEBUG__
 	while (1)
 	{
-	#endif // __DEBUG__
+#endif // __DEBUG__
 		gameboyCPU.ins = FetchByte();
-		switch (gameboyCPU.ins & 0b11000000)
+		switch (gameboyCPU.ins >> 6)
 		{
-		case 0b00000000:
+		case 0:
 		{
 			switch (gameboyCPU.ins)
 			{
@@ -321,7 +323,7 @@ void cpu(void)
 			}
 		}
 		break;
-		case 0b01000000:
+		case 1:
 		{
 			if (gameboyCPU.ins == hlt)
 			{
@@ -340,7 +342,7 @@ void cpu(void)
 			}
 		}
 		break;
-		case 0b10000000:
+		case 2:
 		{
 			if ((gameboyCPU.ins & 0b00000111) == 0b00000110)
 			{
@@ -414,7 +416,7 @@ void cpu(void)
 			flgs |= ((a == 0) << 7);
 		}
 		break;
-		case 0b11000000:
+		case 3:
 		{
 			switch (gameboyCPU.ins)
 			{
@@ -427,9 +429,9 @@ void cpu(void)
 		}
 		break;
 		}
-	#ifndef __DEBUG__
+#ifndef __DEBUG__
 	}
-	#endif // __DEBUG__
+#endif // __DEBUG__
 }
 
-gbCpu gameboyCPU = {.init = cpu_init, .cpu = cpu};
+gbCpu gameboyCPU = { .init = init, .cpu = cpu };
