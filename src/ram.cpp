@@ -4,21 +4,23 @@ namespace gameboy
 {
 	RAM::RAM()
 	{
-		memory = new Byte[0x2000];
+		this->memory = new Byte[0x2000];
+		this->hram = new Byte[0x7F];
 	}
 
 	RAM::~RAM()
 	{
-		delete[] memory;
+		delete[] this->memory;
+		delete[] this->hram;
 	}
 
 	Byte RAM::operator[](Word Addr) const
 	{
-		return memory[Addr];
+		return this->memory[Addr];
 	}
 
 	Byte& RAM::operator[](Word Addr)
 	{
-		return memory[Addr];
+		return this->memory[Addr];
 	}
 }

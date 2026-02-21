@@ -6,11 +6,14 @@
 namespace gameboy
 {
 	class BUS;
-	class CPU 
+	class CPU
 	{
-		private:
-		Byte flag;
+	private:
+		ui32 ticks;
+		Word SP;
+		Word PC;
 		Byte reg[8];
+		Byte flag;
 		Byte& b = reg[0];
 		Byte& c = reg[1];
 		Byte& d = reg[2];
@@ -19,10 +22,7 @@ namespace gameboy
 		Byte& l = reg[5];
 		Byte& hl_ptr = reg[6];
 		Byte& a = reg[7];
-		Word SP;
-		Word PC;
 		Byte IE;
-		ui32 ticks;
 		BUS& bus;
 		Byte ins;
 		bool IME;
@@ -30,6 +30,7 @@ namespace gameboy
 		Word BC(void);
 		Word DE(void);
 		Word AF(void);
+		void AF(Word data);
 		void HL(Word data);
 		void BC(Word data);
 		void DE(Word data);
@@ -41,7 +42,7 @@ namespace gameboy
 		void WriteWord(Word addr, Word data);
 		void prefix_execute();
 		void set_reset(Byte& reg, Byte bit, bool set);
-		public:
+	public:
 		CPU(BUS& b);
 		void execute();
 	};

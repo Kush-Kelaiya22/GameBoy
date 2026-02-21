@@ -7,10 +7,10 @@ namespace gameboy
 {
 	class RAM
 	{
-		private:
-		// The memory of the system
+	private:
 		Byte* memory;
-		public:
+		Byte* hram;
+	public:
 		RAM();
 		~RAM();
 		Byte operator[](Word Addr) const;

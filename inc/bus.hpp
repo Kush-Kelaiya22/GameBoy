@@ -9,10 +9,10 @@ namespace gameboy
 	class CART;
 	class BUS
 	{
-		private:
+	private:
 		RAM& ram;
 		CART& cart;
-		public:
+	public:
 		BUS(RAM& r, CART& c);
 		Byte read(Word Addr);
 		void write(Word Addr, Byte data);

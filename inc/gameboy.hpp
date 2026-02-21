@@ -9,10 +9,6 @@
 
 namespace gameboy
 {
-	static CART cart;
-	static RAM ram;
-	static BUS bus(ram, cart);
-	static CPU cpu(bus);
 }
 
 #endif // __GAMEBOY__

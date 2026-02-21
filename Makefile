@@ -5,7 +5,7 @@ BIN = bin
 SRC = src
 INC = inc
 
-LIBRARIES =
+LIBRARIES = -I.
 EXECUTABLE = main
 
 all: $(BIN)/$(EXECUTABLE)
@@ -15,7 +15,7 @@ run : clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.c
-	$(CC) $(CFLAGS) -I. $^ -o $@ $(LIBRARIES)
+	$(CC) $(CFLAGS) $(LIBRARIES) $^ -o $@ $(LIBRARIES)
 
 clean:
 	-rm $(BIN)/*
