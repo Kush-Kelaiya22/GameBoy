@@ -2,25 +2,23 @@
 
 namespace gameboy
 {
-	RAM::RAM()
+	RAM::RAM() {}
+
+	RAM::~RAM() {}
+
+	Byte RAM::read(Word Addr)
 	{
-		this->memory = new Byte[0x2000];
-		this->hram = new Byte[0x7F];
+		if (Addr >= 0xFF80 && Addr <= 0xFFFE)
+			return this->hram[Addr - 0xFF80];
+		else
+			return this->memory[Addr & 0x1FFF];
 	}
 
-	RAM::~RAM()
+	void RAM::write(Word Addr, Byte data)
 	{
-		delete[] this->memory;
-		delete[] this->hram;
-	}
-
-	Byte RAM::operator[](Word Addr) const
-	{
-		return this->memory[Addr];
-	}
-
-	Byte& RAM::operator[](Word Addr)
-	{
-		return this->memory[Addr];
+		if (Addr >= 0xFF80 && Addr <= 0xFFFE)
+			this->hram[Addr - 0xFF80] = data;
+		else
+			this->memory[Addr & 0x1FFF] = data;
 	}
 }

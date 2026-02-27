@@ -2,12 +2,17 @@
 
 namespace gameboy
 {
-	CPU::CPU(BUS& b) : bus(b)
+	CPU::CPU()
 	{
 		for (Byte& r : this->reg) r = 0x00;
 		this->PC = 0x0150;
 		this->SP = 0x0000;
 		this->flag = 0x00;
+	}
+
+	void CPU::set_bus(BUS* b)
+	{
+		this->bus = b;
 	}
 
 	Word CPU::HL(void)
@@ -56,37 +61,37 @@ namespace gameboy
 
 	Byte CPU::FetchByte()
 	{
-		return bus.read(this->PC++);
+		return bus->read(this->PC++);
 	}
 
 	Word CPU::FetchWord()
 	{
-		Word w = bus.read(this->PC++);
-		w |= bus.read(this->PC++) << 8;
+		Word w = bus->read(this->PC++);
+		w |= bus->read(this->PC++) << 8;
 		return w;
 	}
 
 	Byte CPU::ReadByte(Word addr)
 	{
-		return bus.read(addr);
+		return bus->read(addr);
 	}
 
 	Word CPU::ReadWord(Word addr)
 	{
-		Word w = bus.read(addr);
-		w |= bus.read(addr + 1) << 8;
+		Word w = bus->read(addr);
+		w |= bus->read(addr + 1) << 8;
 		return w;
 	}
 
 	void CPU::WriteByte(Word addr, Byte data)
 	{
-		bus.write(addr, data);
+		bus->write(addr, data);
 	}
 
 	void CPU::WriteWord(Word addr, Word data)
 	{
-		bus.write(addr, data & 0x00FF);
-		bus.write(addr + 1, data >> 8);
+		bus->write(addr, data & 0x00FF);
+		bus->write(addr + 1, data >> 8);
 	}
 
 	inline void CPU::set_reset(Byte& r, Byte bit, bool SR)

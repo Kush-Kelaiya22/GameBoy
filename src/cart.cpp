@@ -4,9 +4,9 @@
 
 namespace gameboy
 {
-	CART::CART()
+	CART::CART(std::string filename)
 	{
-		std::ifstream file("rom.gb", std::ios::binary);
+		std::ifstream file(filename, std::ios::binary);
 		if (!file)
 		{
 			std::cerr << "Error: Could not open ROM file." << '\n';
@@ -21,7 +21,7 @@ namespace gameboy
 		delete[] this->RAM;
 	}
 
-	Byte CART::operator[](Word Addr) const
+	Byte CART::read(Word Addr)
 	{
 		if (Addr < 0x8000)
 		{
@@ -37,8 +37,11 @@ namespace gameboy
 		}
 	}
 
-	Byte& CART::operator[](Word Addr)
+	void CART::write(Word Addr, Byte data)
 	{
-		return this->RAM[Addr & 0x1FFF];
+		if (Addr >= 0xA000 && Addr <= 0xBFFF)
+		{
+			this->RAM[Addr & 0x1FFF] = data;
+		}
 	}
 }
