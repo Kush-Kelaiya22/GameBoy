@@ -23,7 +23,7 @@ namespace gameboy
 		Byte& hl_ptr = reg[6];
 		Byte& a = reg[7];
 		Byte IE;
-		BUS& bus;
+		BUS* bus;
 		Byte ins;
 		bool IME;
 		Word HL(void);
@@ -43,7 +43,8 @@ namespace gameboy
 		void prefix_execute();
 		void set_reset(Byte& reg, Byte bit, bool set);
 	public:
-		CPU(BUS& b);
+		void set_bus(BUS* b);
+		CPU();
 		void execute();
 	};
 }

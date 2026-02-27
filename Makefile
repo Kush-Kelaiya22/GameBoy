@@ -14,7 +14,7 @@ run : clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.c
+$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
 	$(CC) $(CFLAGS) $(LIBRARIES) $^ -o $@ $(LIBRARIES)
 
 clean:

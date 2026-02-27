@@ -1,21 +1,21 @@
 #include <inc/inc.hpp>
 
-#ifndef __RAM__
-#define __RAM__
+#ifndef __PPU__
+#define __PPU__
 
 namespace gameboy
 {
-	class RAM
+	class PPU
 	{
 	private:
-		Byte memory[0x8000];
-		Byte hram[0x80];
+		Byte vram[0x2000];
+		Byte oam[0xA0];
 	public:
-		RAM();
-		~RAM();
+		PPU();
+		~PPU();
 		Byte read(Word Addr);
 		void write(Word Addr, Byte data);
 	};
 }
 
-#endif // __RAM__
+#endif // __PPU__

@@ -65,10 +65,10 @@ namespace gameboy
 		bool MBC1_Mode;
 		bool RAM_BANK_ENABLE[2];
 	public:
-		CART();
+		CART(std::string filename);
 		~CART();
-		Byte operator[](Word addr) const;
-		Byte& operator[](Word addr);
+		Byte read(Word Addr);
+		void write(Word Addr, Byte data);
 	};
 }
 
