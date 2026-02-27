@@ -212,6 +212,38 @@ namespace gameboy
 			{
 				switch (this->ins)
 				{
+				case rlca:
+				{
+					Byte bit7 = this->a & 0b1000'0000;
+					this->a <<= 1;
+					this->a |= (bit7 >> 7);
+					this->flag = 0;
+					this->flag |= (bit7 >> 3);
+				} break;
+				case rrca:
+				{
+					Byte bit0 = this->a & 0b0000'0001;
+					this->a >>= 1;
+					this->a |= (bit0 << 7);
+					this->flag = 0;
+					this->flag |= (bit0 << 4);
+				} break;
+				case rla:
+				{
+					Byte bit7 = this->a & 0b1000'0000;
+					this->a <<= 1;
+					this->a |= ((this->flag & 0b0001'000) >> 4);
+					this->flag = 0;
+					this->flag |= (bit7 >> 3);
+				} break;
+				case rra:
+				{
+					Byte bit0 = this->a & 0b0000'0001;
+					this->a >>= 1;
+					this->a |= ((this->flag & 0b0001'000) << 3);
+					this->flag = 0;
+					this->flag |= (bit0 << 4);
+				} break;
 				case add_hl_bc:
 				{
 					ui32 res = HL() + BC();
