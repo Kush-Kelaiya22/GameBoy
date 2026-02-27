@@ -212,6 +212,154 @@ namespace gameboy
 			{
 				switch (this->ins)
 				{
+				case add_hl_bc:
+				{
+					ui32 res = HL() + BC();
+					this->flag &= 0b0001'0000;
+					this->flag |= ((res & 0x10000) >> 16) << 4;
+					this->flag |= ((((HL() ^ BC() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					HL(res);
+				} break;
+				case add_hl_de:
+				{
+					ui32 res = HL() + DE();
+					this->flag &= 0b0001'0000;
+					this->flag |= ((res & 0x10000) >> 16) << 4;
+					this->flag |= ((((HL() ^ DE() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					HL(res);
+				} break;
+				case add_hl_hl:
+				{
+					ui32 res = HL() + HL();
+					this->flag &= 0b0001'0000;
+					this->flag |= ((res & 0x10000) >> 16) << 4;
+					this->flag |= ((((HL() ^ HL() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					HL(res);
+				} break;
+				case add_hl_sp:
+				{
+					ui32 res = HL() + SP;
+					this->flag &= 0b0001'0000;
+					this->flag |= ((res & 0x10000) >> 16) << 4;
+					this->flag |= ((((HL() ^ SP ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					HL(res);
+				} break;
+				case inc_b:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->b + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->b++;
+					this->flag |= ((this->b == 0) << 7);
+				} break;
+				case inc_c:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->c + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->c++;
+					this->flag |= ((this->c == 0) << 7);
+				} break;
+				case inc_d:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->d + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->d++;
+					this->flag |= ((this->d == 0) << 7);
+				} break;
+				case inc_e:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->e + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->e++;
+					this->flag |= ((this->e == 0) << 7);
+				} break;
+				case inc_h:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->h + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->h++;
+					this->flag |= ((this->h == 0) << 7);
+				} break;
+				case inc_l:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->l + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->l++;
+					this->flag |= ((this->l == 0) << 7);
+				} break;
+				case inc_hl_r8:
+				{
+					Byte hl_data = ReadByte(HL());
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((hl_data + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					hl_data++;
+					WriteByte(HL(), hl_data);
+					this->flag |= ((hl_data == 0) << 7);
+				} break;
+				case inc_a:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->a + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a++;
+					this->flag |= ((this->a == 0) << 7);
+				} break;
+				case dec_b:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->b - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->b--;
+					this->flag |= ((this->b == 0) << 7);
+				} break;
+				case dec_c:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->c - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->c--;
+					this->flag |= ((this->c == 0) << 7);
+				} break;
+				case dec_d:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->d - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->d--;
+					this->flag |= ((this->d == 0) << 7);
+				} break;
+				case dec_e:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->e - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->e--;
+					this->flag |= ((this->e == 0) << 7);
+				} break;
+				case dec_h:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->h - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->h--;
+					this->flag |= ((this->h == 0) << 7);
+				} break;
+				case dec_l:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->l - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->l--;
+					this->flag |= ((this->l == 0) << 7);
+				} break;
+				case dec_hl_r8:
+				{
+					Byte hl_data = ReadByte(HL());
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((hl_data - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					hl_data--;
+					WriteByte(HL(), hl_data);
+					this->flag |= ((hl_data == 0) << 7);
+				} break;
+				case dec_a:
+				{
+					this->flag &= 0b0001'0000;
+					this->flag |= ((((this->a - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a--;
+					this->flag |= ((this->a == 0) << 7);
+				} break;
 				case ccf:
 				{
 					this->flag ^= 0b0001'0000;
@@ -675,16 +823,209 @@ namespace gameboy
 				case cp_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					Word Data = a + FetchByte();
+					Word Data = a + (~FetchByte() + 1);
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
 					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->flag &= 0b0111'0000;
 					this->flag |= ((a == 0) << 7);
 				} break;
+				case rst_tgt3_0:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0000;
+				} break;
+				case rst_tgt3_1:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0008;
+				} break;
+				case rst_tgt3_2:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0010;
+				} break;
+				case rst_tgt3_3:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0018;
+				} break;
+				case rst_tgt3_4:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0020;
+				} break;
+				case rst_tgt3_5:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0028;
+				} break;
+				case rst_tgt3_6:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0030;
+				} break;
+				case rst_tgt3_7:
+				{
+					WriteWord(--SP, PC);
+					SP--;
+					PC = 0x0038;
+				} break;
+				case call_imm:
+				{
+					Word addr = FetchWord();
+					WriteWord(--SP, PC);
+					SP--;
+					PC = addr;
+				} break;
+				case call_z_imm:
+				{
+					Word addr = FetchWord();
+					if (this->flag & 0b1000'0000)
+					{
+						WriteWord(--SP, PC);
+						SP--;
+						PC = addr;
+					}
+				} break;
+				case call_nc_imm:
+				{
+					Word addr = FetchWord();
+					if (!(this->flag & 0b0001'0000))
+					{
+						WriteWord(--SP, PC);
+						SP--;
+						PC = addr;
+					}
+				} break;
+				case call_c_imm:
+				{
+					Word addr = FetchWord();
+					if (this->flag & 0b0001'0000)
+					{
+						WriteWord(--SP, PC);
+						SP--;
+						PC = addr;
+					}
+				} break;
+				case call_nz_imm:
+				{
+					Word addr = FetchWord();
+					if (!(this->flag & 0b1000'0000))
+					{
+						WriteWord(--SP, PC);
+						SP--;
+						PC = addr;
+					}
+				} break;
+				case return_from_jumps:
+				{
+					SP++;
+					PC = ReadWord(SP);
+					SP++;
+				} break;
+				case retc_z:
+				{
+					if (this->flag & 0b1000'0000)
+					{
+						SP++;
+						PC = ReadWord(SP);
+						SP++;
+					}
+				} break;
+				case retc_nz:
+				{
+					if (!(this->flag & 0b1000'0000))
+					{
+						SP++;
+						PC = ReadWord(SP);
+						SP++;
+					}
+				} break;
+				case retc_c:
+				{
+					if (this->flag & 0b0001'0000)
+					{
+						SP++;
+						PC = ReadWord(SP);
+						SP++;
+					}
+				} break;
+				case retc_nc:
+				{
+					if (!(this->flag & 0b0001'0000))
+					{
+						SP++;
+						PC = ReadWord(SP);
+						SP++;
+					}
+				} break;
+				case reti:
+				{
+					SP++;
+					PC = ReadWord(SP);
+					SP++;
+					IME = true;
+				} break;
+				case jp:
+				{
+					PC = FetchWord();
+				} break;
+				case jpc_z:
+				{
+					Word addr = FetchWord();
+					if (this->flag & 0b1000'0000) PC = addr;
+				} break;
+				case jpc_nz:
+				{
+					Word addr = FetchWord();
+					if (!(this->flag & 0b1000'0000)) PC = addr;
+				} break;
+				case jpc_c:
+				{
+					Word addr = FetchWord();
+					if (this->flag & 0b0001'0000) PC = addr;
+				} break;
+				case jpc_nc:
+				{
+					Word addr = FetchWord();
+					if (!(this->flag & 0b0001'0000)) PC = addr;
+				} break;
+				case ld_sp_hl:
+				{
+					this->SP = HL();
+				} break;
+				case jp_hl:
+				{
+					PC = HL();
+				} break;
+				case ld_hl_sp_with_imm8:
+				{
+					SByte addr = (SByte)FetchByte();
+					this->flag &= 0b0001'0000;
+					this->flag |= ((SP + addr) > 0xFFFF) << 4;
+					this->flag |= ((((SP ^ addr ^ (SP + addr)) >> 3) & 0b0001'0000) == 0b0001'0000) << 5;
+					HL(SP + addr);
+				} break;
+				case add_sp_imm8:
+				{
+					SByte addr = (SByte)FetchByte();
+					this->flag &= 0b0001'0000;
+					this->flag |= ((SP + addr) > 0xFFFF) << 4;
+					this->flag |= ((((SP ^ addr ^ (SP + addr)) >> 3) & 0b0001'0000) == 0b0001'0000) << 5;
+					SP += addr;
+				} break;
+				default:
+					break;
 				}
-			}
-			break;
+			} break;
 			}
 #ifndef __DEBUG__
 		}
