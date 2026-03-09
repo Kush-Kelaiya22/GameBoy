@@ -9,6 +9,7 @@ namespace gameboy
 	class CART;
 	class PPU;
 	class CPU;
+	class APU;
 	class BUS
 	{
 	private:
@@ -16,12 +17,15 @@ namespace gameboy
 		CART* cart;
 		PPU* ppu;
 		CPU* cpu;
+		APU* apu;
 	public:
 		void set_ram(RAM* r);
 		void set_cart(CART* c);
 		void set_ppu(PPU* p);
 		void set_cpu(CPU* c);
+		void set_apu(APU* a);
 		BUS();
+		~BUS();
 		Byte read(Word Addr);
 		void write(Word Addr, Byte data);
 	};
