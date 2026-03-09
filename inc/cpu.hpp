@@ -9,6 +9,7 @@ namespace gameboy
 	class CPU
 	{
 	private:
+		BUS* bus;
 		ui32 ticks;
 		Word SP;
 		Word PC;
@@ -23,9 +24,7 @@ namespace gameboy
 		Byte& hl_ptr = reg[6];
 		Byte& a = reg[7];
 		Byte IE;
-		BUS* bus;
 		Byte ins;
-		bool IME;
 		Word HL(void);
 		Word BC(void);
 		Word DE(void);
@@ -43,8 +42,9 @@ namespace gameboy
 		void prefix_execute();
 		void set_reset(Byte& reg, Byte bit, bool set);
 	public:
-		void set_bus(BUS* b);
+		bool IME;
 		CPU();
+		void set_bus(BUS* b);
 		void execute();
 	};
 }

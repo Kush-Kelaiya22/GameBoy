@@ -4,6 +4,7 @@ namespace gameboy
 {
 	CPU::CPU()
 	{
+		this->bus = nullptr;
 		for (Byte& r : this->reg) r = 0x00;
 		this->PC = 0x0150;
 		this->SP = 0x0000;
@@ -61,37 +62,37 @@ namespace gameboy
 
 	Byte CPU::FetchByte()
 	{
-		return bus->read(this->PC++);
+		return this->bus->read(this->PC++);
 	}
 
 	Word CPU::FetchWord()
 	{
-		Word w = bus->read(this->PC++);
-		w |= bus->read(this->PC++) << 8;
+		Word w = this->bus->read(this->PC++);
+		w |= this->bus->read(this->PC++) << 8;
 		return w;
 	}
 
 	Byte CPU::ReadByte(Word addr)
 	{
-		return bus->read(addr);
+		return this->bus->read(addr);
 	}
 
 	Word CPU::ReadWord(Word addr)
 	{
-		Word w = bus->read(addr);
-		w |= bus->read(addr + 1) << 8;
+		Word w = this->bus->read(addr);
+		w |= this->bus->read(addr + 1) << 8;
 		return w;
 	}
 
 	void CPU::WriteByte(Word addr, Byte data)
 	{
-		bus->write(addr, data);
+		this->bus->write(addr, data);
 	}
 
 	void CPU::WriteWord(Word addr, Word data)
 	{
-		bus->write(addr, data & 0x00FF);
-		bus->write(addr + 1, data >> 8);
+		this->bus->write(addr, data & 0x00FF);
+		this->bus->write(addr + 1, data >> 8);
 	}
 
 	inline void CPU::set_reset(Byte& r, Byte bit, bool SR)
@@ -106,7 +107,7 @@ namespace gameboy
 		{
 		case 0b00'000'000:
 		{
-			if (this->ins & 0b00'000'111 == 0b00'000'110) this->hl_ptr = ReadByte(HL());
+			if (this->ins & 0b00'000'111 == 0b00'000'110) this->hl_ptr = this->ReadByte(this->HL());
 			switch (this->ins & 0b00'111'000)
 			{
 			case 0b00'110'000:
@@ -185,11 +186,11 @@ namespace gameboy
 			}
 			break;
 			}
-			if (this->ins & 0b00'000'111 == 0b00'000'110) WriteByte(HL(), this->hl_ptr);
+			if (this->ins & 0b00'000'111 == 0b00'000'110) this->WriteByte(this->HL(), this->hl_ptr);
 		} break;
 		case 0b01'000'000:
 		{
-			if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = ReadByte(HL());
+			if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = this->ReadByte(this->HL());
 			this->flag &= 0b0011'0000;
 			this->flag |= 0b0010'0000;
 			this->flag |= (this->reg[this->ins & 0b00'000'111] & (0b1 << ((this->ins & 0b00'111'000) >> 3))) << 7;
@@ -197,9 +198,9 @@ namespace gameboy
 		case 0b10'000'000:
 		case 0b11'000'000:
 		{
-			if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = ReadByte(HL());
-			set_reset(this->reg[this->ins & 0b00'000'111], (this->ins & 0b00'111'000) >> 3, (this->ins & 0b010'000'000) >> 6);
-			if (this->ins & 0b00'000'111 == 0b00'000'110) WriteByte(HL(), hl_ptr);
+			if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = this->ReadByte(this->HL());
+			this->set_reset(this->reg[this->ins & 0b00'000'111], (this->ins & 0b00'111'000) >> 3, (this->ins & 0b010'000'000) >> 6);
+			if (this->ins & 0b00'000'111 == 0b00'000'110) this->WriteByte(this->HL(), hl_ptr);
 		} break;
 		}
 	}
@@ -224,7 +225,8 @@ namespace gameboy
 					this->a |= (bit7 >> 7);
 					this->flag = 0;
 					this->flag |= (bit7 >> 3);
-				} break;
+				}
+				break;
 				case rrca:
 				{
 					Byte bit0 = this->a & 0b0000'0001;
@@ -232,7 +234,8 @@ namespace gameboy
 					this->a |= (bit0 << 7);
 					this->flag = 0;
 					this->flag |= (bit0 << 4);
-				} break;
+				}
+				break;
 				case rla:
 				{
 					Byte bit7 = this->a & 0b1000'0000;
@@ -240,7 +243,8 @@ namespace gameboy
 					this->a |= ((this->flag & 0b0001'000) >> 4);
 					this->flag = 0;
 					this->flag |= (bit7 >> 3);
-				} break;
+				}
+				break;
 				case rra:
 				{
 					Byte bit0 = this->a & 0b0000'0001;
@@ -248,155 +252,176 @@ namespace gameboy
 					this->a |= ((this->flag & 0b0001'000) << 3);
 					this->flag = 0;
 					this->flag |= (bit0 << 4);
-				} break;
+				}
+				break;
 				case add_hl_bc:
 				{
-					ui32 res = HL() + BC();
+					ui32 res = this->HL() + this->BC();
 					this->flag &= 0b0001'0000;
 					this->flag |= ((res & 0x10000) >> 16) << 4;
-					this->flag |= ((((HL() ^ BC() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
-					HL(res);
-				} break;
+					this->flag |= ((((this->HL() ^ this->BC() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->HL(res);
+				}
+				break;
 				case add_hl_de:
 				{
-					ui32 res = HL() + DE();
+					ui32 res = this->HL() + this->DE();
 					this->flag &= 0b0001'0000;
 					this->flag |= ((res & 0x10000) >> 16) << 4;
-					this->flag |= ((((HL() ^ DE() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
-					HL(res);
-				} break;
+					this->flag |= ((((this->HL() ^ this->DE() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->HL(res);
+				}
+				break;
 				case add_hl_hl:
 				{
-					ui32 res = HL() + HL();
+					ui32 res = this->HL() + this->HL();
 					this->flag &= 0b0001'0000;
 					this->flag |= ((res & 0x10000) >> 16) << 4;
-					this->flag |= ((((HL() ^ HL() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
-					HL(res);
-				} break;
+					this->flag |= ((((this->HL() ^ this->HL() ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->HL(res);
+				}
+				break;
 				case add_hl_sp:
 				{
-					ui32 res = HL() + SP;
+					ui32 res = this->HL() + this->SP;
 					this->flag &= 0b0001'0000;
 					this->flag |= ((res & 0x10000) >> 16) << 4;
-					this->flag |= ((((HL() ^ SP ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
-					HL(res);
-				} break;
+					this->flag |= ((((this->HL() ^ this->SP ^ res) >> 11) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->HL(res);
+				}
+				break;
 				case inc_b:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->b + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->b++;
 					this->flag |= ((this->b == 0) << 7);
-				} break;
+				}
+				break;
 				case inc_c:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->c + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->c++;
 					this->flag |= ((this->c == 0) << 7);
-				} break;
+				}
+				break;
 				case inc_d:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->d + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->d++;
 					this->flag |= ((this->d == 0) << 7);
-				} break;
+				}
+				break;
 				case inc_e:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->e + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->e++;
 					this->flag |= ((this->e == 0) << 7);
-				} break;
+				}
+				break;
 				case inc_h:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->h + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->h++;
 					this->flag |= ((this->h == 0) << 7);
-				} break;
+				}
+				break;
 				case inc_l:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->l + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->l++;
 					this->flag |= ((this->l == 0) << 7);
-				} break;
+				}
+				break;
 				case inc_hl_r8:
 				{
-					Byte hl_data = ReadByte(HL());
+					hl_ptr = this->ReadByte(HL());
 					this->flag &= 0b0001'0000;
-					this->flag |= ((((hl_data + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					hl_data++;
-					WriteByte(HL(), hl_data);
-					this->flag |= ((hl_data == 0) << 7);
-				} break;
+					this->flag |= ((((hl_ptr + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					hl_ptr++;
+					this->WriteByte(this->HL(), hl_ptr);
+					this->flag |= ((hl_ptr == 0) << 7);
+				}
+				break;
 				case inc_a:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->a + 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->a++;
 					this->flag |= ((this->a == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_b:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->b - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->b--;
 					this->flag |= ((this->b == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_c:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->c - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->c--;
 					this->flag |= ((this->c == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_d:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->d - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->d--;
 					this->flag |= ((this->d == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_e:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->e - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->e--;
 					this->flag |= ((this->e == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_h:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->h - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->h--;
 					this->flag |= ((this->h == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_l:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->l - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->l--;
 					this->flag |= ((this->l == 0) << 7);
-				} break;
+				}
+				break;
 				case dec_hl_r8:
 				{
-					Byte hl_data = ReadByte(HL());
+					hl_ptr = ReadByte(HL());
 					this->flag &= 0b0001'0000;
-					this->flag |= ((((hl_data - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					hl_data--;
-					WriteByte(HL(), hl_data);
-					this->flag |= ((hl_data == 0) << 7);
-				} break;
+					this->flag |= ((((hl_ptr - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					hl_ptr--;
+					WriteByte(HL(), hl_ptr);
+					this->flag |= ((hl_ptr == 0) << 7);
+				}
+				break;
 				case dec_a:
 				{
 					this->flag &= 0b0001'0000;
 					this->flag |= ((((this->a - 1) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->a--;
 					this->flag |= ((this->a == 0) << 7);
-				} break;
+				}
+				break;
 				case ccf:
 				{
 					this->flag ^= 0b0001'0000;
@@ -436,17 +461,17 @@ namespace gameboy
 				break;
 				case inc_bc:
 				{
-					BC(BC() + 1);
+					this->BC(this->BC() + 1);
 				}
 				break;
 				case inc_de:
 				{
-					DE(DE() + 1);
+					this->DE(this->DE() + 1);
 				}
 				break;
 				case inc_hl:
 				{
-					HL(HL() + 1);
+					this->HL(this->HL() + 1);
 				}
 				break;
 				case inc_sp:
@@ -456,17 +481,17 @@ namespace gameboy
 				break;
 				case dec_bc:
 				{
-					BC(BC() - 1);
+					this->BC(this->BC() - 1);
 				}
 				break;
 				case dec_de:
 				{
-					DE(DE() - 1);
+					this->DE(this->DE() - 1);
 				}
 				break;
 				case dec_hl:
 				{
-					HL(HL() - 1);
+					this->HL(this->HL() - 1);
 				}
 				break;
 				case dec_sp:
@@ -476,143 +501,143 @@ namespace gameboy
 				break;
 				case ld_b_imm:
 				{
-					this->b = FetchByte();
+					this->b = this->FetchByte();
 				}
 				break;
 				case ld_c_imm:
 				{
-					this->c = FetchByte();
+					this->c = this->FetchByte();
 				}
 				break;
 				case ld_d_imm:
 				{
-					this->d = FetchByte();
+					this->d = this->FetchByte();
 				}
 				break;
 				case ld_e_imm:
 				{
-					this->e = FetchByte();
+					this->e = this->FetchByte();
 				}
 				break;
 				case ld_h_imm:
 				{
-					this->h = FetchByte();
+					this->h = this->FetchByte();
 				}
 				break;
 				case ld_l_imm:
 				{
-					this->l = FetchByte();
+					this->l = this->FetchByte();
 				}
 				break;
 				case ld_hl_r8_imm:
 				{
-					this->hl_ptr = FetchByte();
-					WriteByte(HL(), this->hl_ptr);
+					this->hl_ptr = this->FetchByte();
+					this->WriteByte(this->HL(), this->hl_ptr);
 				}
 				break;
 				case ld_a_imm:
 				{
-					this->a = FetchByte();
+					this->a = this->FetchByte();
 				}
 				break;
 				case ld_bc_imm:
 				{
-					BC(FetchWord());
+					this->BC(this->FetchWord());
 				}
 				break;
 				case ld_de_imm:
 				{
-					DE(FetchWord());
+					this->DE(this->FetchWord());
 				}
 				break;
 				case ld_hl_imm:
 				{
-					HL(FetchWord());
+					this->HL(this->FetchWord());
 				}
 				break;
 				case ld_sp_imm:
 				{
-					this->SP = FetchWord();
+					this->SP = this->FetchWord();
 				}
 				break;
 				case ld_imm_sp:
 				{
-					Word addr = FetchWord();
-					WriteWord(addr, this->SP);
+					Word addr = this->FetchWord();
+					this->WriteWord(addr, this->SP);
 				}
 				break;
 				case ld_a_to_loc_bc:
 				{
-					WriteByte(BC(), this->a);
+					this->WriteByte(this->BC(), this->a);
 				}
 				break;
 				case ld_a_from_loc_bc:
 				{
-					a = ReadByte(BC());
+					a = this->ReadByte(this->BC());
 				}
 				break;
 				case ld_a_from_loc_de:
 				{
-					a = ReadByte(DE());
+					a = this->ReadByte(this->DE());
 				}
 				break;
 				case ld_a_from_loc_hld:
 				{
-					a = ReadByte(HL());
-					HL(HL() - 1);
+					a = this->ReadByte(this->HL());
+					this->HL(this->HL() - 1);
 				}
 				break;
 				case ld_a_from_loc_hli:
 				{
-					a = ReadByte(HL());
-					HL(HL() + 1);
+					a = this->ReadByte(this->HL());
+					this->HL(this->HL() + 1);
 				}
 				break;
 				case ld_a_to_loc_de:
 				{
-					WriteByte(DE(), a);
+					this->WriteByte(this->DE(), a);
 				}
 				break;
 				case ld_a_to_loc_hld:
 				{
-					WriteByte(HL(), a);
-					HL(HL() - 1);
+					this->WriteByte(this->HL(), a);
+					this->HL(this->HL() - 1);
 				}
 				break;
 				case ld_a_to_loc_hli:
 				{
-					WriteByte(HL(), a);
-					HL(HL() + 1);
+					this->WriteByte(this->HL(), a);
+					this->HL(this->HL() + 1);
 				}
 				break;
 				case jr:
 				{
-					SByte addr = (SByte)FetchByte();
-					PC += addr;
+					SByte addr = (SByte)this->FetchByte();
+					this->PC += addr;
 				}
 				break;
 				case jrc_c:
 				{
-					SByte addr = (SByte)FetchByte();
-					if (this->flag & 0b0001'0000) PC += addr;
+					SByte addr = (SByte)this->FetchByte();
+					if (this->flag & 0b0001'0000) this->PC += addr;
 				}
 				break;
 				case jrc_nc:
 				{
-					SByte addr = (SByte)FetchByte();
-					if (!(this->flag & 0b0001'0000)) PC += addr;
+					SByte addr = (SByte)this->FetchByte();
+					if (!(this->flag & 0b0001'0000)) this->PC += addr;
 				}
 				break;
 				case jrc_z:
 				{
-					SByte addr = (SByte)FetchByte();
-					if (this->flag & 0b1000'0000) PC += addr;
+					SByte addr = (SByte)this->FetchByte();
+					if (this->flag & 0b1000'0000) this->PC += addr;
 				}
 				break;
 				case jrc_nz:
 				{
-					SByte addr = (SByte)FetchByte();
-					if (!(this->flag & 0b1000'0000)) PC += addr;
+					SByte addr = (SByte)this->FetchByte();
+					if (!(this->flag & 0b1000'0000)) this->PC += addr;
 				}
 				break;
 				case stop:
@@ -631,81 +656,81 @@ namespace gameboy
 				}
 				else
 				{
-					if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = ReadByte(HL());
+					if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = this->ReadByte(this->HL());
 					this->reg[(this->ins & 0b00'111'000) >> 3] = this->reg[this->ins & 0b00'000'111];
-					if (this->ins & 0b00'111'000 == 0b00'110'000) WriteByte(HL(), hl_ptr);
+					if (this->ins & 0b00'111'000 == 0b00'110'000) this->WriteByte(this->HL(), hl_ptr);
 				}
 			}
 			break;
 			case 0b10'000'000:
 			{
-				if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = ReadByte(HL());
+				if (this->ins & 0b00'000'111 == 0b00'000'110) hl_ptr = this->ReadByte(this->HL());
 				this->flag &= 0b0001'0000;
 				switch ((this->ins & 0b00'111'000) >> 3)
 				{
 				case 0:
 				{
-					Word Data = a + this->reg[this->ins & 0b00'000'111];
+					Word Data = this->a + this->reg[this->ins & 0b00'000'111];
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 				}
 				break;
 				case 1:
 				{
-					Word Data = a + (this->reg[this->ins & 0b00'000'111] + ((this->flag >> 4) & 0b0001));
+					Word Data = this->a + (this->reg[this->ins & 0b00'000'111] + ((this->flag >> 4) & 0b0001));
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 				}
 				break;
 				case 2:
 				{
-					Word Data = a + (~this->reg[this->ins & 0b00'000'111] + 1);
+					Word Data = this->a + (~this->reg[this->ins & 0b00'000'111] + 1);
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 				}
 				break;
 				case 3:
 				{
-					Word Data = a + (~this->reg[this->ins & 0b00'000'111] + 1 + ((this->flag >> 4) & 0b0001));
+					Word Data = this->a + (~this->reg[this->ins & 0b00'000'111] + 1 + ((this->flag >> 4) & 0b0001));
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 				}
 				break;
 				case 4:
 				{
-					a &= this->reg[this->ins & 0b00'000'111];
+					this->a &= this->reg[this->ins & 0b00'000'111];
 					this->flag = 0b0010'0000;
 				}
 				break;
 				case 5:
 				{
-					a ^= this->reg[this->ins & 0b00'000'111];
+					this->a ^= this->reg[this->ins & 0b00'000'111];
 					this->flag = 0;
 				}
 				break;
 				case 6:
 				{
-					a |= this->reg[this->ins & 0b00'000'111];
+					this->a |= this->reg[this->ins & 0b00'000'111];
 					this->flag = 0;
 				}
 				break;
 				case 7:
 				{
-					Word Data = a - this->reg[this->ins & 0b00'000'111];
+					Word Data = this->a - this->reg[this->ins & 0b00'000'111];
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 				}
 				break;
 				}
 				this->flag &= 0b0111'0000;
-				this->flag |= ((a == 0) << 7);
+				this->flag |= ((this->a == 0) << 7);
 			}
 			break;
 			case 0b11'000'000:
@@ -714,355 +739,356 @@ namespace gameboy
 				{
 				case prefix:
 				{
-					prefix_execute();
+					this->prefix_execute();
 				} break;
 				case psh_bc:
 				{
-					WriteWord(--SP, BC());
-					SP--;
+					this->WriteWord(--(this->SP), this->BC());
+					this->SP--;
 				} break;
 				case psh_de:
 				{
-					WriteWord(--SP, DE());
-					SP--;
+					this->WriteWord(--(this->SP), this->DE());
+					this->SP--;
 				} break;
 				case psh_hl:
 				{
-					WriteWord(--SP, HL());
-					SP--;
+					this->WriteWord(--(this->SP), this->HL());
+					this->SP--;
 				} break;
 				case psh_af:
 				{
-					WriteWord(--SP, AF());
-					SP--;
+					this->WriteWord(--(this->SP), this->AF());
+					this->SP--;
 				} break;
 				case pop_af:
 				{
-					SP++;
-					AF(ReadWord(SP));
-					SP++;
+					this->SP++;
+					this->AF(this->ReadWord(this->SP));
+					this->SP++;
 				} break;
 				case pop_bc:
 				{
-					SP++;
-					BC(ReadWord(SP));
-					SP++;
+					this->SP++;
+					this->BC(this->ReadWord(this->SP));
+					this->SP++;
 				} break;
 				case pop_de:
 				{
-					SP++;
-					DE(ReadWord(SP));
-					SP++;
+					this->SP++;
+					this->DE(this->ReadWord(this->SP));
+					this->SP++;
 				} break;
 				case pop_hl:
 				{
-					SP++;
-					HL(ReadWord(SP));
-					SP++;
+					this->SP++;
+					this->HL(this->ReadWord(this->SP));
+					this->SP++;
 				} break;
 				case ldh_a_c:
 				{
-					a = ReadByte(0xFF00 + c);
+					this->a = this->ReadByte(0xFF00 + this->c);
 				} break;
 				case ldh_c_a:
 				{
-					WriteByte(0xFF00 + c, a);
+					this->WriteByte(0xFF00 + this->c, this->a);
 				} break;
 				case ldh_a_imm_loc:
 				{
-					a = ReadByte(0xFF00 + FetchByte());
+					this->a = this->ReadByte(0xFF00 + this->FetchByte());
 				} break;
 				case ldh_imm_loc_a:
 				{
-					WriteByte(0xFF00 + FetchByte(), a);
+					this->WriteByte(0xFF00 + this->FetchByte(), this->a);
 				} break;
 				case ld_imm_loc_a:
 				{
-					Word addr = FetchWord();
-					a = ReadByte(addr);
+					Word addr = this->FetchWord();
+					this->a = this->ReadByte(addr);
 				} break;
 				case ld_a_imm_loc:
 				{
-					Word addr = FetchWord();
-					WriteByte(addr, a);
+					Word addr = this->FetchWord();
+					this->WriteByte(addr, this->a);
 				} break;
 				case di:
 				{
-					IME = false;
+					this->IME = false;
 				} break;
 				case ei:
 				{
-					IME = true;
+					this->IME = true;
 				} break;
 				case add_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					Word Data = a + FetchByte();
+					Word Data = this->a + this->FetchByte();
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case adc_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					Word Data = a + FetchByte() + ((this->flag & 0x10) >> 4);
+					Word Data = this->a + this->FetchByte() + ((this->flag & 0x10) >> 4);
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case sub_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					Word Data = a + (~FetchByte() + 1);
+					Word Data = this->a + (~this->FetchByte() + 1);
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case sbc_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					Word Data = a + (~FetchByte() + 1 + ((this->flag & 0x10) >> 4));
+					Word Data = this->a + (~this->FetchByte() + 1 + ((this->flag & 0x10) >> 4));
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
-					a = Data;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->a = Data;
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case and_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					a &= FetchByte();
+					this->a &= this->FetchByte();
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case xor_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					a ^= FetchByte();
+					this->a ^= this->FetchByte();
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case or_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					a |= FetchByte();
+					this->a |= this->FetchByte();
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case cp_a_imm:
 				{
 					this->flag &= 0b0001'0000;
-					Word Data = a + (~FetchByte() + 1);
+					Word Data = this->a + (~this->FetchByte() + 1);
 					this->flag = 0b0100'0000;
 					this->flag |= ((Data & 0x100) >> 8) << 4;
-					this->flag |= ((((Data ^ a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
+					this->flag |= ((((Data ^ this->a) >> 3) & 0b0011'0000) == 0b0010'0000) << 5;
 					this->flag &= 0b0111'0000;
-					this->flag |= ((a == 0) << 7);
+					this->flag |= ((this->a == 0) << 7);
 				} break;
 				case rst_tgt3_0:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0000;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0000;
 				} break;
 				case rst_tgt3_1:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0008;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0008;
 				} break;
 				case rst_tgt3_2:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0010;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0010;
 				} break;
 				case rst_tgt3_3:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0018;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0018;
 				} break;
 				case rst_tgt3_4:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0020;
+					WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0020;
 				} break;
 				case rst_tgt3_5:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0028;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0028;
 				} break;
 				case rst_tgt3_6:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0030;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0030;
 				} break;
 				case rst_tgt3_7:
 				{
-					WriteWord(--SP, PC);
-					SP--;
-					PC = 0x0038;
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = 0x0038;
 				} break;
 				case call_imm:
 				{
-					Word addr = FetchWord();
-					WriteWord(--SP, PC);
-					SP--;
-					PC = addr;
+					Word addr = this->FetchWord();
+					this->WriteWord(--(this->SP), this->PC);
+					this->SP--;
+					this->PC = addr;
 				} break;
 				case call_z_imm:
 				{
-					Word addr = FetchWord();
+					Word addr = this->FetchWord();
 					if (this->flag & 0b1000'0000)
 					{
-						WriteWord(--SP, PC);
-						SP--;
-						PC = addr;
+						this->WriteWord(--(this->SP), this->PC);
+						this->SP--;
+						this->PC = addr;
 					}
 				} break;
 				case call_nc_imm:
 				{
-					Word addr = FetchWord();
+					Word addr = this->FetchWord();
 					if (!(this->flag & 0b0001'0000))
 					{
-						WriteWord(--SP, PC);
-						SP--;
-						PC = addr;
+						this->WriteWord(--(this->SP), this->PC);
+						this->SP--;
+						this->PC = addr;
 					}
 				} break;
 				case call_c_imm:
 				{
-					Word addr = FetchWord();
+					Word addr = this->FetchWord();
 					if (this->flag & 0b0001'0000)
 					{
-						WriteWord(--SP, PC);
-						SP--;
-						PC = addr;
+						this->WriteWord(--(this->SP), this->PC);
+						this->SP--;
+						this->PC = addr;
 					}
 				} break;
 				case call_nz_imm:
 				{
-					Word addr = FetchWord();
+					Word addr = this->FetchWord();
 					if (!(this->flag & 0b1000'0000))
 					{
-						WriteWord(--SP, PC);
-						SP--;
-						PC = addr;
+						this->WriteWord(--(this->SP), this->PC);
+						this->SP--;
+						this->PC = addr;
 					}
 				} break;
 				case return_from_jumps:
 				{
-					SP++;
-					PC = ReadWord(SP);
-					SP++;
+					this->SP++;
+					this->PC = this->ReadWord(this->SP);
+					this->SP++;
 				} break;
 				case retc_z:
 				{
 					if (this->flag & 0b1000'0000)
 					{
-						SP++;
-						PC = ReadWord(SP);
-						SP++;
+						this->SP++;
+						this->PC = this->ReadWord(this->SP);
+						this->SP++;
 					}
 				} break;
 				case retc_nz:
 				{
 					if (!(this->flag & 0b1000'0000))
 					{
-						SP++;
-						PC = ReadWord(SP);
-						SP++;
+						this->SP++;
+						this->PC = this->ReadWord(this->SP);
+						this->SP++;
 					}
 				} break;
 				case retc_c:
 				{
 					if (this->flag & 0b0001'0000)
 					{
-						SP++;
-						PC = ReadWord(SP);
-						SP++;
+						this->SP++;
+						this->PC = this->ReadWord(this->SP);
+						this->SP++;
 					}
 				} break;
 				case retc_nc:
 				{
 					if (!(this->flag & 0b0001'0000))
 					{
-						SP++;
-						PC = ReadWord(SP);
-						SP++;
+						this->SP++;
+						this->PC = this->ReadWord(this->SP);
+						this->SP++;
 					}
 				} break;
 				case reti:
 				{
-					SP++;
-					PC = ReadWord(SP);
-					SP++;
-					IME = true;
+					this->SP++;
+					this->PC = this->ReadWord(this->SP);
+					this->SP++;
+					this->IME = true;
 				} break;
 				case jp:
 				{
-					PC = FetchWord();
+					this->PC = this->FetchWord();
 				} break;
 				case jpc_z:
 				{
-					Word addr = FetchWord();
-					if (this->flag & 0b1000'0000) PC = addr;
+					Word addr = this->FetchWord();
+					if (this->flag & 0b1000'0000) this->PC = addr;
 				} break;
 				case jpc_nz:
 				{
-					Word addr = FetchWord();
-					if (!(this->flag & 0b1000'0000)) PC = addr;
+					Word addr = this->FetchWord();
+					if (!(this->flag & 0b1000'0000)) this->PC = addr;
 				} break;
 				case jpc_c:
 				{
-					Word addr = FetchWord();
-					if (this->flag & 0b0001'0000) PC = addr;
+					Word addr = this->FetchWord();
+					if (this->flag & 0b0001'0000) this->PC = addr;
 				} break;
 				case jpc_nc:
 				{
-					Word addr = FetchWord();
-					if (!(this->flag & 0b0001'0000)) PC = addr;
+					Word addr = this->FetchWord();
+					if (!(this->flag & 0b0001'0000)) this->PC = addr;
 				} break;
 				case ld_sp_hl:
 				{
-					this->SP = HL();
+					this->SP = this->HL();
 				} break;
 				case jp_hl:
 				{
-					PC = HL();
+					this->PC = this->HL();
 				} break;
 				case ld_hl_sp_with_imm8:
 				{
-					SByte addr = (SByte)FetchByte();
+					SByte addr = (SByte)this->FetchByte();
 					this->flag &= 0b0001'0000;
-					this->flag |= ((SP + addr) > 0xFFFF) << 4;
-					this->flag |= ((((SP ^ addr ^ (SP + addr)) >> 3) & 0b0001'0000) == 0b0001'0000) << 5;
-					HL(SP + addr);
+					this->flag |= ((this->SP + addr) > 0xFFFF) << 4;
+					this->flag |= ((((this->SP ^ addr ^ (this->SP + addr)) >> 3) & 0b0001'0000) == 0b0001'0000) << 5;
+					this->HL(this->SP + addr);
 				} break;
 				case add_sp_imm8:
 				{
-					SByte addr = (SByte)FetchByte();
+					SByte addr = (SByte)this->FetchByte();
 					this->flag &= 0b0001'0000;
-					this->flag |= ((SP + addr) > 0xFFFF) << 4;
-					this->flag |= ((((SP ^ addr ^ (SP + addr)) >> 3) & 0b0001'0000) == 0b0001'0000) << 5;
-					SP += addr;
+					this->flag |= ((this->SP + addr) > 0xFFFF) << 4;
+					this->flag |= ((((this->SP ^ addr ^ (this->SP + addr)) >> 3) & 0b0001'0000) == 0b0001'0000) << 5;
+					this->SP += addr;
 				} break;
 				default:
 					break;
 				}
-			} break;
+			}
+			break;
 			}
 #ifndef __DEBUG__
 		}
