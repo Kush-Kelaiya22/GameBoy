@@ -3,6 +3,7 @@
 #include <inc/cpu.hpp>
 #include <inc/ram.hpp>
 #include <inc/ins.hpp>
+#include <inc/ppu.hpp>
 
 #ifndef __GAMEBOY__
 #define __GAMEBOY__
